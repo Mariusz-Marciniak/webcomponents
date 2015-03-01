@@ -1,0 +1,26 @@
+{
+  "name": "timeline",
+  "version": "0.0.1",
+  "homepage": "https://github.com/Mariusz-Marciniak/webcomponents",
+  "authors": [
+    "mariusz <marcinka2205@o2.pl>"
+  ],
+  "description": "Timeline webcomponent",
+  "main": "timeline.html",
+  "keywords": [
+    "timeline",
+    "webcomponent"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.5.5",
+    "font-roboto": "Polymer/font-roboto#~0.5.5"
+  }
+}
