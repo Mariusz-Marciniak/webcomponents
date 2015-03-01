@@ -1,0 +1,27 @@
+{
+  "name": "editable-listbox",
+  "version": "0.0.1",
+  "description": "Polymer custom webcomponent editable-listbox.",
+  "main": "editable-listbox.html",
+  "keywords": [
+    "listbox",
+    "webcomponents",
+    "polymer"
+  ],
+  "authors": [
+    "mariusz marciniak"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.5.5",
+    "webcomponentsjs": "~0.5.5",
+    "paper-icon-button": "Polymer/paper-icon-button#~0.5.5"
+  }
+}

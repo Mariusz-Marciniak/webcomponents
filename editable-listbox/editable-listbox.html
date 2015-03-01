@@ -1,0 +1,101 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/core-icons/core-icons.html">
+<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="bower_components/font-roboto/roboto.html">
+
+<polymer-element name="editable-listbox" attributes="header rows">
+    <template>
+        <style>
+            h3 {
+            font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
+            margin-left: 10px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            }
+            .menu {
+            display: inline-block;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
+            }
+            .menu-content {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            }
+            .item {
+            margin-left: 5px;
+            font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
+            position: relative;
+            line-height: 40px;
+            }
+            #rowInput {
+            margin: 5px;
+            }
+        </style>
+
+        <div class="menu">
+            <div class="menu-content">
+                <template bind if="{{ header.length > 0 }}">
+                    <h3>{{header}}</h3>
+                </template>
+                <template repeat="{{row in rows}}">
+                    <div horizontal layout>
+                        <div flex class="item">
+                            <div class="label">
+                                {{labelOf(row)}}
+                            </div>
+                        </div>
+                        <paper-icon-button icon="remove-circle-outline" on-click="{{removeRow}}">
+                            {{labelOf(row)}}
+                        </paper-icon-button>
+                    </div>
+                </template>
+                <div horizontal layout>
+                    <input id="rowInput" placeholder="enter unique value..." flex>
+                    <paper-icon-button icon="add-circle-outline" on-click="{{addRow}}"></paper-icon-button>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+    function fetchLabel(obj) {
+        if(typeof(obj)==="object") {
+            return obj.label.trim();
+        } else {
+            return obj.trim();
+        }
+    }
+
+    function labelInArray(value, arr) {
+        var trimmedValue = value.trim();
+        //arr.indexOf(trimmedValue);
+        for(var i=0; i<arr.length; i++) {
+            if(fetchLabel(arr[i]) === trimmedValue)
+                return i;
+        }
+        return -1;
+    }
+    Polymer({
+      header: "",
+      rows: [],
+      addRow: function() {
+        var input = this.$.rowInput.value;
+        if(input.length>0 && labelInArray(input, this.rows) == -1) {
+            this.rows.push(input);
+        }
+        this.$.rowInput.value = "";
+      },
+      removeRow: function(event, detail, sender) {
+        var index = labelInArray(sender.innerHTML,this.rows);
+        if(index > -1) {
+            this.rows.splice(index, 1);
+        }
+      },
+      labelOf: function(obj) {
+        return fetchLabel(obj);
+      }
+    });
+
+
+    </script>
+</polymer-element>

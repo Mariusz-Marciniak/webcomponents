@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
+    <link rel="import" href="editable-listbox.html">
+    <script>
+    function check() {
+        var users = document.querySelector('#users');
+        alert(users.rows);
+    }
+    </script>
+</head>
+<body unresolved>
+    <div style="width: 300px;">
+        <editable-listbox id="users" header="Users" rows=["John",{"label":"Gregory","id":"89"}]></editable-listbox>
+    </div>
+    <br/><br/>
+    <input type="button" value="Verify" onclick="check();"/>
+</body>
+</html>

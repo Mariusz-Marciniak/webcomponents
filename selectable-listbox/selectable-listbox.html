@@ -1,0 +1,83 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/core-selector/core-selector.html">
+<link rel="import" href="bower_components/font-roboto/roboto.html">
+
+<polymer-element name="selectable-listbox" attributes="header rows selected selectedClass">
+    <template>
+        <style>
+            h3 {
+            font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
+            margin-left: 10px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            }
+            .menu {
+            display: inline-block;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
+            }
+            .menu-content {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            }
+            .item {
+            padding-left: 5px;
+            font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
+            position: relative;
+            line-height: 40px;
+            }
+            .item:hover {
+            background: LightSkyBlue;
+            cursor: pointer;
+            }
+            .item.core-selected {
+            background: SteelBlue;
+            }
+        </style>
+
+        <div class="menu">
+            <div class="menu-content">
+                <template bind if="{{ header.length > 0 }}">
+                    <h3>{{header}}</h3>
+                </template>
+                <core-selector valueattr="label" selected="{{selected}}" selectedClass="{{selectedClass}}">
+                    <template repeat="{{row in rows}}">
+                        <div label="{{labelOf(row)}}" class="item">
+                            {{labelOf(row)}}
+                        </div>
+                    </template>
+                </core-selector>
+            </div>
+        </div>
+    </template>
+    <script>
+    function fetchLabel(obj) {
+        if(typeof(obj)==="object") {
+            return obj.label.trim();
+        } else {
+            return obj.trim();
+        }
+    }
+
+    function labelInArray(value, arr) {
+        var trimmedValue = value.trim();
+        //arr.indexOf(trimmedValue);
+        for(var i=0; i<arr.length; i++) {
+            if(fetchLabel(arr[i]) === trimmedValue)
+                return i;
+        }
+        return -1;
+    }
+    Polymer({
+      header: "",
+      rows: [],
+      selected: null,
+      selectedClass: 'core-selected',
+      labelOf: function(obj) {
+        return fetchLabel(obj);
+      }
+    });
+
+    </script>
+</polymer-element>
