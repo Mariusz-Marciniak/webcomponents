@@ -1,0 +1,118 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/font-roboto/roboto.html">
+
+<polymer-element name="timeline-panel" attributes="fromDate, toDate">
+    <template>
+        <style>
+            .full {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+        <canvas id="tCanvas" class="full">
+        </canvas>
+    </template>
+    <script>
+    function daysdiff(from, to) {
+        return (to - from) / (1000 * 60 * 60 * 24);
+    }
+
+    function daysadd(date, amount) {
+        var result = new Date(date.getYear(), date.getMonth(), date.getDate());
+        result.setDate(date.getDate() + amount - 1);
+        return result;
+    }
+
+    function positionInElement(element, e) {
+        var offset = element.offset();
+        return {
+            x: e.clientX - offset.left,
+            y: e.clientY - offset.top
+        }
+    }
+    Polymer({
+        // --- const
+        MAX_DAYS: 31,
+        MIN_ROW_WIDTH: 20,
+        LEFT_PANEL_WIDTH: 100,
+        BACKGROUND_STYLE: 'white',
+        // --- object fields
+        from: null,
+        to: null,
+        amountOfDays: 0,
+        recalculatePossibleAmountOfDays: function()  {
+            var tmpAmountOfDays = this.amountOfDays;
+            var canvas = this.$.tCanvas;
+            if (this.amountOfDays > this.MAX_DAYS) {
+                this.amountOfDays = this.MAX_DAYS;
+            }
+            if ((canvas.width - this.LEFT_PANEL_WIDTH) / this.amountOfDays < this.MIN_ROW_WIDTH) {
+                this.amountOfDays = Math.round((canvas.width - this.LEFT_PANEL_WIDTH) / this.MIN_ROW_WIDTH);
+            }
+            if (this.amountOfDays != tmpAmountOfDays) {
+                this.to = daysadd(this.from, this.amountOfDays);
+                console.warn("TIMELINE COMPONENT: too long period, end date will be set to " + this.to);
+            }
+        },
+
+        render: function() {
+            var canvas = this.$.tCanvas;
+            var ctx = canvas.getContext("2d");
+            this.renderUserNames();
+            this.renderGrid(canvas, ctx);
+        },
+
+        renderUserNames: function() {
+
+        },
+
+        renderGrid: function(canvas, ctx) {
+            var colWidth = Math.round((canvas.width-this.LEFT_PANEL_WIDTH) / this.amountOfDays);
+            var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
+            ctx.fillStyle = this.BACKGROUND_STYLE;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.lineWidth = 0.1;
+            ctx.strokeStyle = "black";
+            for (i = 1; i < this.amountOfDays; i++) {
+                ctx.moveTo(this.LEFT_PANEL_WIDTH + i * colWidth, 0);
+                ctx.lineTo(this.LEFT_PANEL_WIDTH + i * colWidth, canvas.height);
+            }
+            ctx.stroke();
+            ctx.font = "6pt Arial";
+            ctx.textAlign="center";
+            ctx.textBaseline = "top";
+            ctx.fillStyle = "black";
+            for (i = 0; i < this.amountOfDays; i++) {
+                var dayTxt = dateIter.getDate() + "-" + (dateIter.getMonth() + 1);
+                ctx.fillText(dayTxt, this.LEFT_PANEL_WIDTH + Math.round(colWidth/2) + i * colWidth, 0);
+                dateIter.setDate(dateIter.getDate() + 1);
+            }
+        },
+        // events
+        ready: function() {
+            var canvas = this.$.tCanvas;
+            if(this.fromDate == null) {
+                this.from = new Date();
+            } else {
+                this.from = new Date(this.fromDate);
+
+            }
+            if(this.toDate == null) {
+                this.to = daysadd(this.from, this.MAX_DAYS)
+            } else {
+                this.to = new Date(this.toDate);
+            }
+            this.amountOfDays = Math.round(daysdiff(this.from, this.to));
+            this.recalculatePossibleAmountOfDays();
+            canvas.addEventListener("click", this.onMouseClick);
+            this.render();
+        },
+        onMouseClick: function(e) {
+            var pos = positionInElement(this.$.tCanvas, e);
+            console.log(pos.x + "::" + pos.y);
+        }
+
+    });
+    </script>
+</polymer-element>
