@@ -1,16 +1,28 @@
 <link rel="import" href="bower_components/polymer/polymer.html">
 <link rel="import" href="bower_components/font-roboto/roboto.html">
+<link rel="import" href="entry.html">
 
-<polymer-element name="timeline-panel" attributes="fromDate, toDate">
+<polymer-element name="timeline-panel" attributes="fromDate, toDate, monthStyle, monthsNames, monthTextStyle">
     <template>
         <style>
-            .full {
+            .month-header {
+                {{monthStyle}}
+                ;
+                position: absolute;
+                top: 0px;
+            }
+            .grid-background {
                 width: 100%;
                 height: 100%;
+                z-index: 2;
             }
         </style>
-        <canvas id="tCanvas" class="full">
+        <div id="monthsHeaders"></div>
+        <canvas id="tCanvas" class="grid-background">
         </canvas>
+        <span id="entries">
+            <timeline-entry top="40px" left="130px" width="100px" height="10px" color="yellow" />
+        </span>
     </template>
     <script>
     function daysdiff(from, to) {
@@ -24,21 +36,23 @@
     }
 
     function positionInElement(element, e) {
-        var offset = element.offset();
         return {
-            x: e.clientX - offset.left,
-            y: e.clientY - offset.top
+            x: e.clientX - element.offsetLeft,
+            y: e.clientY - element.offsetTop
         }
     }
     Polymer({
         // --- const
         MAX_DAYS: 31,
-        MIN_ROW_WIDTH: 20,
+        MIN_COL_WIDTH: 20,
         LEFT_PANEL_WIDTH: 100,
         BACKGROUND_STYLE: 'white',
         // --- object fields
         from: null,
         to: null,
+        monthsNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+        monthStyle: "height: 40px; background-color: SkyBlue; border-radius: 5px;",
+        monthTextStyle: "color: red;",
         amountOfDays: 0,
         recalculatePossibleAmountOfDays: function()  {
             var tmpAmountOfDays = this.amountOfDays;
@@ -46,47 +60,12 @@
             if (this.amountOfDays > this.MAX_DAYS) {
                 this.amountOfDays = this.MAX_DAYS;
             }
-            if ((canvas.width - this.LEFT_PANEL_WIDTH) / this.amountOfDays < this.MIN_ROW_WIDTH) {
-                this.amountOfDays = Math.round((canvas.width - this.LEFT_PANEL_WIDTH) / this.MIN_ROW_WIDTH);
+            if ((canvas.width - this.LEFT_PANEL_WIDTH) / this.amountOfDays < this.MIN_COL_WIDTH) {
+                this.amountOfDays = Math.round((canvas.width - this.LEFT_PANEL_WIDTH) / this.MIN_COL_WIDTH);
             }
             if (this.amountOfDays != tmpAmountOfDays) {
                 this.to = daysadd(this.from, this.amountOfDays);
                 console.warn("TIMELINE COMPONENT: too long period, end date will be set to " + this.to);
-            }
-        },
-
-        render: function() {
-            var canvas = this.$.tCanvas;
-            var ctx = canvas.getContext("2d");
-            this.renderUserNames();
-            this.renderGrid(canvas, ctx);
-        },
-
-        renderUserNames: function() {
-
-        },
-
-        renderGrid: function(canvas, ctx) {
-            var colWidth = Math.round((canvas.width-this.LEFT_PANEL_WIDTH) / this.amountOfDays);
-            var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
-            ctx.fillStyle = this.BACKGROUND_STYLE;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.lineWidth = 0.1;
-            ctx.strokeStyle = "black";
-            for (i = 1; i < this.amountOfDays; i++) {
-                ctx.moveTo(this.LEFT_PANEL_WIDTH + i * colWidth, 0);
-                ctx.lineTo(this.LEFT_PANEL_WIDTH + i * colWidth, canvas.height);
-            }
-            ctx.stroke();
-            ctx.font = "6pt Arial";
-            ctx.textAlign="center";
-            ctx.textBaseline = "top";
-            ctx.fillStyle = "black";
-            for (i = 0; i < this.amountOfDays; i++) {
-                var dayTxt = dateIter.getDate() + "-" + (dateIter.getMonth() + 1);
-                ctx.fillText(dayTxt, this.LEFT_PANEL_WIDTH + Math.round(colWidth/2) + i * colWidth, 0);
-                dateIter.setDate(dateIter.getDate() + 1);
             }
         },
         // events
@@ -109,10 +88,69 @@
             this.render();
         },
         onMouseClick: function(e) {
-            var pos = positionInElement(this.$.tCanvas, e);
+            var pos = positionInElement(this, e);
             console.log(pos.x + "::" + pos.y);
-        }
+        },
+        // rendering functions
+        render: function() {
+            var canvas = this.$.tCanvas;
+            var ctx = canvas.getContext("2d");
+            var colWidth = Math.round((canvas.width-this.LEFT_PANEL_WIDTH) / this.amountOfDays);
+            this.renderMonthHeaders(colWidth);
+            this.renderUserNames();
+            this.renderGrid(colWidth, canvas, ctx);
+        },
+        renderMonthHeaders: function(colWidth) {
+            var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
+            var html = '';
+            var previousMonth = -1;
+            var length = 0;
+            var start = 0;
+            for (i = 0; i < this.amountOfDays; i++) {
+                if(dateIter.getMonth() != previousMonth) {
+                    if(start != length) {
+                        html += this.prepareHtml(start, length);
+                        start = length;
+                        length = 0;
+                    }
+                    previousMonth = dateIter.getMonth();
+                }
+                length += colWidth;
+                dateIter.setDate(dateIter.getDate() + 1);
 
+            }
+            html += this.prepareHtml(start, length);
+            this.$.monthsHeaders.innerHTML = html;
+        },
+        prepareHtml: function(start, length) {
+            return '<div class="month-header" style="left:'+(this.LEFT_PANEL_WIDTH+start)+'px;width:'+length+'px;"></div>';
+        },
+        renderUserNames: function() {
+
+        },
+
+        renderGrid: function(colWidth, canvas, ctx) {
+            var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
+            ctx.fillStyle = this.BACKGROUND_STYLE;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.lineWidth = 0.1;
+            ctx.strokeStyle = "black";
+            for (i = 1; i < this.amountOfDays; i++) {
+                ctx.moveTo(this.LEFT_PANEL_WIDTH + i * colWidth, 0);
+                ctx.lineTo(this.LEFT_PANEL_WIDTH + i * colWidth, canvas.height);
+            }
+            ctx.stroke();
+            ctx.font = "6pt Arial";
+            ctx.textAlign="center";
+            ctx.textBaseline = "top";
+            ctx.fillStyle = "black";
+            for (i = 0; i < this.amountOfDays; i++) {
+                var dayTxt = dateIter.getDate();
+                ctx.fillText(dayTxt, this.LEFT_PANEL_WIDTH + Math.round(colWidth/2) + i * colWidth, 0);
+                dateIter.setDate(dateIter.getDate() + 1);
+            }
+        }
     });
     </script>
 </polymer-element>
