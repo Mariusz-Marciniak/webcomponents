@@ -2,14 +2,21 @@
 <link rel="import" href="bower_components/font-roboto/roboto.html">
 <link rel="import" href="entry.html">
 
-<polymer-element name="timeline-panel" attributes="fromDate, toDate, monthStyle, monthsNames, monthTextStyle">
+<polymer-element name="timeline-panel" attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayHeaderStyle">
     <template>
         <style>
             .month-header {
-                {{monthStyle}}
+                {{monthHeaderStyle}}
                 ;
                 position: absolute;
-                top: 0px;
+            }
+            .month-text {
+                {{monthTextStyle}}
+            }
+            .day-header {
+                {{dayHeaderStyle}}
+                ;
+                position: absolute;
             }
             .grid-background {
                 width: 100%;
@@ -17,7 +24,8 @@
                 z-index: 2;
             }
         </style>
-        <div id="monthsHeaders"></div>
+        <span id="monthsHeaders"></span>
+        <span id="daysHeaders"></span>
         <canvas id="tCanvas" class="grid-background">
         </canvas>
         <span id="entries">
@@ -48,11 +56,13 @@
         LEFT_PANEL_WIDTH: 100,
         BACKGROUND_STYLE: 'white',
         // --- object fields
+        headerHeight: 0,
         from: null,
         to: null,
         monthsNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-        monthStyle: "height: 40px; background-color: SkyBlue; border-radius: 5px;",
-        monthTextStyle: "color: red;",
+        monthHeaderStyle: "height: 40px; display: table; overflow: hidden; background-color: SkyBlue; border-radius: 5px;",
+        monthTextStyle: "color: white; display: table-cell; vertical-align:middle; text-align:center; font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; overflow: hidden;",
+        dayHeaderStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;",
         amountOfDays: 0,
         recalculatePossibleAmountOfDays: function()  {
             var tmpAmountOfDays = this.amountOfDays;
@@ -97,6 +107,7 @@
             var ctx = canvas.getContext("2d");
             var colWidth = Math.round((canvas.width-this.LEFT_PANEL_WIDTH) / this.amountOfDays);
             this.renderMonthHeaders(colWidth);
+            this.renderDaysNumbers(colWidth);
             this.renderUserNames();
             this.renderGrid(colWidth, canvas, ctx);
         },
@@ -106,24 +117,41 @@
             var previousMonth = -1;
             var length = 0;
             var start = 0;
-            for (i = 0; i < this.amountOfDays; i++) {
+            for (var i = 0; i < this.amountOfDays; i++) {
                 if(dateIter.getMonth() != previousMonth) {
                     if(start != length) {
-                        html += this.prepareHtml(start, length);
-                        start = length;
+                        html += this.prepareHtmlForMonth(this.monthsNames[previousMonth], start, length);
+                        start += length;
                         length = 0;
                     }
                     previousMonth = dateIter.getMonth();
                 }
                 length += colWidth;
                 dateIter.setDate(dateIter.getDate() + 1);
-
             }
-            html += this.prepareHtml(start, length);
+            html += this.prepareHtmlForMonth(this.monthsNames[dateIter.getMonth()], start, length);
             this.$.monthsHeaders.innerHTML = html;
+            this.headerHeight = this.$.monthsHeaders.firstChild.clientHeight;
         },
-        prepareHtml: function(start, length) {
-            return '<div class="month-header" style="left:'+(this.LEFT_PANEL_WIDTH+start)+'px;width:'+length+'px;"></div>';
+        prepareHtmlForMonth: function(month, offset, length) {
+            return '<div class="month-header" style="left:'+(this.LEFT_PANEL_WIDTH+offset)+'px;"><span class="month-text" style="width:'+(length-1)
+                    +'px;max-width:'+(length-1)+'px;">'+month+'</span></div>';
+        },
+        renderDaysNumbers: function (colWidth) {
+            var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
+            var html = '';
+            var offset = 0;
+            for (var i = 0; i < this.amountOfDays; i++) {
+                html += this.prepareHtmlForDay(dateIter.getDate(), offset, colWidth);
+                dateIter.setDate(dateIter.getDate() + 1);
+                offset += colWidth;
+            }
+            this.$.daysHeaders.innerHTML = html;
+            this.headerHeight += this.$.daysHeaders.firstChild.clientHeight;
+        },
+        prepareHtmlForDay: function(day, offset, length) {
+            return '<div class="day-header" style="top:'+this.headerHeight+'px;left:'+(this.LEFT_PANEL_WIDTH+offset)
+                    +'px;width:'+length+'px;">'+day+'</div>';
         },
         renderUserNames: function() {
 
@@ -131,12 +159,13 @@
 
         renderGrid: function(colWidth, canvas, ctx) {
             var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
+            var i = 0;
             ctx.fillStyle = this.BACKGROUND_STYLE;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
             ctx.lineWidth = 0.1;
             ctx.strokeStyle = "black";
-            for (i = 1; i < this.amountOfDays; i++) {
+            for (i = 0; i < this.amountOfDays - 1; i++) {
                 ctx.moveTo(this.LEFT_PANEL_WIDTH + i * colWidth, 0);
                 ctx.lineTo(this.LEFT_PANEL_WIDTH + i * colWidth, canvas.height);
             }
