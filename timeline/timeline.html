@@ -42,7 +42,7 @@
     }
 
     function daysadd(date, amount) {
-        var result = new Date(date.getYear(), date.getMonth(), date.getDate());
+        var result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         result.setDate(date.getDate() + amount - 1);
         return result;
     }
@@ -117,7 +117,7 @@
             this.renderEntries(colWidth);
         },
         renderMonthHeaders: function(colWidth) {
-            var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
+            var dateIter = new Date(this.from.getFullYear(), this.from.getMonth(), this.from.getDate());
             var html = '';
             var previousMonth = -1;
             var length = 0;
@@ -143,7 +143,7 @@
                     +'px;max-width:'+(length-1)+'px;">'+month+'</span></div>';
         },
         renderDaysNumbers: function (colWidth) {
-            var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
+            var dateIter = new Date(this.from.getFullYear(), this.from.getMonth(), this.from.getDate());
             var html = '';
             var offset = 0;
             for (var i = 0; i < this.amountOfDays; i++) {
@@ -170,19 +170,21 @@
         renderEntries: function(colWidth) {
             var element;
             var offset = this.headerHeight;
-            var entryFromColumn, entryToColumn;
-	    var colorIndex = 0;
+            var fromDate, toDate;
+            var entryFromColumn, entryAmountOfColumns;
+	        var colorIndex = 0;
             for(var row of this.rows) {
                 for(var entry of row.entries) {
-                    entryFromColumn = Math.max(daysdiff(this.from, new Date(entry.from)),0);
+                    fromDate = Math.max(new Date(entry.from),this.from);
+                    toDate = Math.min(new Date(entry.to),this.to);
+                    entryFromColumn = daysdiff(this.from, fromDate);
                     if(entryFromColumn < this.amountOfDays) {
-                        entryToColumn = Math.min(daysdiff(this.from, new Date(entry.to)), this.amountOfDays - entryFromColumn);
-alert(entry.to +"::"+ entryToColumn);
+                        entryAmountOfColumns = daysdiff(fromDate, toDate)+1;
                         element = document.createElement("timeline-entry");
-		        element.top=offset+'px';
-		        element.left=(this.LEFT_PANEL_WIDTH+colWidth*entryFromColumn)+'px';
-		        element.width=(colWidth*entryToColumn)+'px';
-		        element.height=this.rowHeight+'px';
+                        element.top=offset+'px';
+                        element.left=(this.LEFT_PANEL_WIDTH+colWidth*entryFromColumn)+'px';
+                        element.width=(colWidth*entryAmountOfColumns)+'px';
+                        element.height=this.rowHeight+'px';
                         element.color=this.colorsForRows[colorIndex];
                         this.$.entries.appendChild(element);
                     }
