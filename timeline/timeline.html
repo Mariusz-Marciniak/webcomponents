@@ -1,10 +1,9 @@
 <link rel="import" href="bower_components/polymer/polymer.html">
 <link rel="import" href="bower_components/font-roboto/roboto.html">
-<link rel="import" href="entry.html">
 
 <polymer-element name="timeline-panel" attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows">
     <template>
-        <style>
+        <style no-shim>
             .month-header {
                 {{monthHeaderStyle}}
                 ;
@@ -19,11 +18,11 @@
                 ;
                 position: absolute;
             }
-			.user-text {
+            .user-text {
                 {{userTextStyle}}
                 ;
                 position: absolute;
-			}
+            }
             .full-view {
                 width: 100%;
                 height: 100%;
@@ -65,11 +64,11 @@
         from: null,
         to: null,
         rows: [],
-		rowHeight: 20,
+        rowHeight: 20,
         monthsNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
         monthHeaderStyle: "height: 40px; display: table; overflow: hidden; background-color: SkyBlue; border-radius: 5px; top: 0px;",
         monthTextStyle: "color: white; display: table-cell; vertical-align:top; padding-top:3px; text-align:center; font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; overflow: hidden;",
-		userTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; left: 2px;",
+        userTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; left: 2px;",
         dayTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; font-size: 10px; top: 28px; text-align:center; ",
         amountOfDays: 0,
         recalculatePossibleAmountOfDays: function()  {
@@ -85,7 +84,7 @@
                 console.warn("TIMELINE COMPONENT: too long period, end date will be set to " + this.to);
             }
         },
-        // events
+        // --- events
         ready: function() {
             if(this.fromDate == null) {
                 this.from = new Date();
@@ -102,18 +101,19 @@
             this.recalculatePossibleAmountOfDays();
             this.addEventListener("click", this.onMouseClick);
             this.render();
+            Polymer.import(["entry.html"]);
         },
         onMouseClick: function(e) {
             var pos = positionInElement(this, e);
             console.log(pos.x + "::" + pos.y);
         },
-        // rendering functions
+        // --- rendering functions
         render: function() {
             var colWidth = Math.round((this.parentElement.clientWidth-this.LEFT_PANEL_WIDTH) / this.amountOfDays);
             this.renderMonthHeaders(colWidth);
             this.renderDaysNumbers(colWidth);
             this.renderUserNames();
-			this.renderEntries();
+            this.renderEntries(colWidth);
         },
         renderMonthHeaders: function(colWidth) {
             var dateIter = new Date(this.from.getYear(), this.from.getMonth(), this.from.getDate());
@@ -163,21 +163,29 @@
                 html += '<div class="user-text" style="top:'+offset+'px;">'+row.label+'</div>';
 				offset += this.rowHeight;
             }
-			this.$.users.innerHTML = html;
+            this.$.users.innerHTML = html;
         },
 
-        renderEntries: function() {
-            var html = "";
-			var offset = this.headerHeight;
+        renderEntries: function(colWidth) {
+            var element;
+            var offset = this.headerHeight;
+            var entryFromColumn, entryToColumn;
             for(var row of this.rows) {
-				//for(var entry of row.entries) {
-//                <timeline-entry top="60px" left="130px" width="100px" height="10px" color="yellow" />
-				//html += '<div class="user-text" style="top:'+offset+'px;">'+row.label+'</div>';
-				//}
-				offset += this.rowHeight;
+                for(var entry of row.entries) {
+                    entryFromColumn = daysdiff(this.from, new Date(entry.from));
+                    if(entryFromColumn < this.amountOfDays) {
+                        entryToColumn = Math.min(daysdiff(this.from, new Date(entry.to)), this.amountOfDays - entryFromColumn);
+                        element = document.createElement("timeline-entry");
+		        element.top=offset+'px';
+		        element.left=(this.LEFT_PANEL_WIDTH+colWidth*entryFromColumn)+'px';
+		        element.width=(colWidth*entryToColumn)+'px';
+		        element.height=this.rowHeight+'px';
+                        element.color='yellow';
+                        this.$.entries.appendChild(element);
+                    }
+                }
+                offset += this.rowHeight;
             }
-			this.$.entries.innerHTML = html;
-					
         }
     });
     </script>

@@ -1,19 +1,13 @@
 <link rel="import" href="bower_components/polymer/polymer.html">
 <polymer-element name="timeline-entry" attributes="top, left, width, height, color">
     <template>
-        <style>
+        <style no-shim>
             .entry {
                 position: absolute;
-                left: {{left}};
-                top: {{top}};
-                width: {{width}};
-                height: {{height}};
-                background: {{color}};
                 z-index: 5;
             }
         </style>
-        <div class="entry">
-
+        <div class="entry" style="left: {{left}};top: {{top}}; width: {{width}}; height: {{height}}; background: {{color}};" >
         </div>
     </template>
     <script>
