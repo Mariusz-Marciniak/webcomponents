@@ -3,7 +3,7 @@
 <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="bower_components/font-roboto/roboto.html">
 
-<polymer-element name="editable-listbox" attributes="header rows">
+<polymer-element name="editable-listbox" attributes="header rows validate">
     <template>
         <style>
             h3 {
@@ -27,6 +27,8 @@
             font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
             position: relative;
             line-height: 40px;
+            }
+            .error {
             }
             #rowInput {
             margin: 5px;
@@ -54,6 +56,8 @@
                     <input id="rowInput" placeholder="enter unique value..." flex>
                     <paper-icon-button icon="add-circle-outline" on-click="{{addRow}}"></paper-icon-button>
                 </div>
+                <p class="error">
+                </p>
             </div>
         </div>
     </template>
@@ -78,10 +82,20 @@
     Polymer({
       header: "",
       rows: [],
+      validate: undefined,
       addRow: function() {
         var input = this.$.rowInput.value;
         if(input.length>0 && labelInArray(input, this.rows) == -1) {
-            this.rows.push(input);
+            if(this.validate != undefined && typeof(window[this.validate]) == "function") {
+                var err = window[this.validate](input);
+                if(err === null) {
+                    this.rows.push(input);
+                } else {
+                    console.log(err);
+                }
+            } else {
+                this.rows.push(input);
+            }
         }
         this.$.rowInput.value = "";
       },
