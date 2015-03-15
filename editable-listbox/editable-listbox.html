@@ -3,7 +3,7 @@
 <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="bower_components/font-roboto/roboto.html">
 
-<polymer-element name="editable-listbox" attributes="header rows validate">
+<polymer-element name="editable-listbox" attributes="header rows validation conversion">
     <template>
         <style>
             h3 {
@@ -28,7 +28,12 @@
             position: relative;
             line-height: 40px;
             }
-            .error {
+            #error {
+            font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
+            font-weight: bold;
+            font-size: 10px;
+            color: red;
+            margin-left: 10px;
             }
             #rowInput {
             margin: 5px;
@@ -56,13 +61,13 @@
                     <input id="rowInput" placeholder="enter unique value..." flex>
                     <paper-icon-button icon="add-circle-outline" on-click="{{addRow}}"></paper-icon-button>
                 </div>
-                <p class="error">
+                <p id="error">
                 </p>
             </div>
         </div>
     </template>
     <script>
-    function fetchLabel(obj) {
+    function edit_fetchLabel(obj) {
         if(typeof(obj)==="object") {
             return obj.label.trim();
         } else {
@@ -70,43 +75,59 @@
         }
     }
 
-    function labelInArray(value, arr) {
+    function edit_labelInArray(value, arr) {
         var trimmedValue = value.trim();
         //arr.indexOf(trimmedValue);
         for(var i=0; i<arr.length; i++) {
-            if(fetchLabel(arr[i]) === trimmedValue)
+            if(edit_fetchLabel(arr[i]) === trimmedValue)
                 return i;
         }
         return -1;
     }
+
+    function edit_validate(func, value, errorComponent) {
+        if(func != undefined && typeof(window[func]) == "function") {
+            var err = window[func](value);
+            if(err === null) {
+                return true;
+            } else {
+                errorComponent.innerHTML = err;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function edit_convert(func, value) {
+        if(func != undefined && typeof(window[func]) == "function") {
+            return window[func](value);
+        } else {
+            return value;
+        }
+    }
+
     Polymer({
       header: "",
       rows: [],
-      validate: undefined,
+      validation: undefined,
       addRow: function() {
         var input = this.$.rowInput.value;
-        if(input.length>0 && labelInArray(input, this.rows) == -1) {
-            if(this.validate != undefined && typeof(window[this.validate]) == "function") {
-                var err = window[this.validate](input);
-                if(err === null) {
-                    this.rows.push(input);
-                } else {
-                    console.log(err);
-                }
-            } else {
-                this.rows.push(input);
+        if(input.length>0 && edit_labelInArray(input, this.rows) == -1) {
+            if(edit_validate(this.validation, input, this.$.error)) {
+                this.rows.push(edit_convert(this.conversion, input));
+                this.$.error.innerHTML = "";
             }
         }
         this.$.rowInput.value = "";
       },
       removeRow: function(event, detail, sender) {
-        var index = labelInArray(sender.innerHTML,this.rows);
+        var index = edit_labelInArray(sender.innerHTML,this.rows);
         if(index > -1) {
             this.rows.splice(index, 1);
         }
       },
       labelOf: function(obj) {
-        return fetchLabel(obj);
+        return edit_fetchLabel(obj);
       }
     });
 
