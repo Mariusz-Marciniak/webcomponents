@@ -67,7 +67,13 @@
         </div>
     </template>
     <script>
-    function edit_fetchLabel(obj) {
+
+    if(window.$mmWebcompUtils$ == undefined)
+        window.$mmWebcompUtils$ = {};
+    if(window.$mmWebcompUtils$.editListbox == undefined)
+        window.$mmWebcompUtils$.editListbox = {};
+
+    window.$mmWebcompUtils$.editListbox.fetchLabel = function (obj) {
         if(typeof(obj)==="object") {
             return obj.label.trim();
         } else {
@@ -75,17 +81,16 @@
         }
     }
 
-    function edit_labelInArray(value, arr) {
+    window.$mmWebcompUtils$.editListbox.labelInArray = function (value, arr) {
         var trimmedValue = value.trim();
-        //arr.indexOf(trimmedValue);
         for(var i=0; i<arr.length; i++) {
-            if(edit_fetchLabel(arr[i]) === trimmedValue)
+            if($mmWebcompUtils$.editListbox.fetchLabel(arr[i]) === trimmedValue)
                 return i;
         }
         return -1;
     }
 
-    function edit_validate(func, value, errorComponent) {
+    window.$mmWebcompUtils$.editListbox.validate = function (func, value, errorComponent) {
         if(func != undefined && typeof(window[func]) == "function") {
             var err = window[func](value);
             if(err === null) {
@@ -98,36 +103,35 @@
         return true;
     }
 
-    function edit_convert(func, value) {
+    window.$mmWebcompUtils$.editListbox.convert = function(func, value) {
         if(func != undefined && typeof(window[func]) == "function") {
             return window[func](value);
         } else {
             return value;
         }
     }
-
     Polymer({
       header: "",
       rows: [],
       validation: undefined,
       addRow: function() {
         var input = this.$.rowInput.value;
-        if(input.length>0 && edit_labelInArray(input, this.rows) == -1) {
-            if(edit_validate(this.validation, input, this.$.error)) {
-                this.rows.push(edit_convert(this.conversion, input));
+        if(input.length>0 && $mmWebcompUtils$.editListbox.labelInArray(input, this.rows) == -1) {
+            if($mmWebcompUtils$.validate(this.validation, input, this.$.error)) {
+                this.rows.push($mmWebcompUtils$.editListbox.convert(this.conversion, input));
                 this.$.error.innerHTML = "";
             }
         }
         this.$.rowInput.value = "";
       },
       removeRow: function(event, detail, sender) {
-        var index = edit_labelInArray(sender.innerHTML,this.rows);
+        var index = $mmWebcompUtils$.editListbox.labelInArray(sender.innerHTML,this.rows);
         if(index > -1) {
             this.rows.splice(index, 1);
         }
       },
       labelOf: function(obj) {
-        return edit_fetchLabel(obj);
+        return $mmWebcompUtils$.editListbox.fetchLabel(obj);
       }
     });
 

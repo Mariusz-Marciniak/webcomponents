@@ -37,17 +37,22 @@
             </div>
     </template>
     <script>
-    function daysdiff(from, to) {
+    if(window.$mmWebcompUtils$ == undefined)
+        window.$mmWebcompUtils$ = {};
+    if(window.$mmWebcompUtils$.timeline == undefined)
+        window.$mmWebcompUtils$.timeline = {};
+
+    window.$mmWebcompUtils$.timeline.daysdiff = function(from, to) {
         return (to - from) / (1000 * 60 * 60 * 24);
     }
 
-    function daysadd(date, amount) {
+    window.$mmWebcompUtils$.timeline.daysadd = function(date, amount) {
         var result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         result.setDate(date.getDate() + amount - 1);
         return result;
     }
 
-    function positionInElement(element, e) {
+    window.$mmWebcompUtils$.timeline.positionInElement = function(element, e) {
         return {
             x: e.clientX - element.offsetLeft,
             y: e.clientY - element.offsetTop

@@ -52,7 +52,12 @@
         </div>
     </template>
     <script>
-    function fetchLabel(obj) {
+    if(window.$mmWebcompUtils$ == undefined)
+        window.$mmWebcompUtils$ = {};
+    if(window.$mmWebcompUtils$.selectListbox == undefined)
+        window.$mmWebcompUtils$.selectListbox = {};
+
+    window.$mmWebcompUtils$.selectListbox.fetchLabel = function(obj) {
         if(typeof(obj)==="object") {
             return obj.label.trim();
         } else {
@@ -60,9 +65,8 @@
         }
     }
 
-    function labelInArray(value, arr) {
+    window.$mmWebcompUtils$.selectListbox.labelInArray = function (value, arr) {
         var trimmedValue = value.trim();
-        //arr.indexOf(trimmedValue);
         for(var i=0; i<arr.length; i++) {
             if(fetchLabel(arr[i]) === trimmedValue)
                 return i;
@@ -75,7 +79,7 @@
       selected: null,
       selectedClass: 'core-selected',
       labelOf: function(obj) {
-        return fetchLabel(obj);
+        return $mmWebcompUtils$.selectListbox.fetchLabel(obj);
       }
     });
 
