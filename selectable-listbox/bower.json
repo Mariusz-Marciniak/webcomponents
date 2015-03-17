@@ -1,6 +1,6 @@
 {
   "name": "selectable-listbox",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Polymer custom webcomponent selectable-listbox",
   "main": "selectable-listbox.html",
   "keywords": [

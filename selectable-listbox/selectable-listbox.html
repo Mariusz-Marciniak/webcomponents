@@ -1,7 +1,3 @@
-<link rel="import" href="bower_components/polymer/polymer.html">
-<link rel="import" href="bower_components/core-selector/core-selector.html">
-<link rel="import" href="bower_components/font-roboto/roboto.html">
-
 <polymer-element name="selectable-listbox" attributes="header rows selected selectedClass">
     <template>
         <style>
@@ -54,24 +50,25 @@
     <script>
     if(window.$mmWebcompUtils$ == undefined)
         window.$mmWebcompUtils$ = {};
-    if(window.$mmWebcompUtils$.selectListbox == undefined)
+    if(window.$mmWebcompUtils$.selectListbox == undefined) {
         window.$mmWebcompUtils$.selectListbox = {};
 
-    window.$mmWebcompUtils$.selectListbox.fetchLabel = function(obj) {
-        if(typeof(obj)==="object") {
-            return obj.label.trim();
-        } else {
-            return obj.trim();
+        window.$mmWebcompUtils$.selectListbox.fetchLabel = function (obj) {
+            if (typeof(obj) === "object") {
+                return obj.label.trim();
+            } else {
+                return obj.trim();
+            }
         }
-    }
 
-    window.$mmWebcompUtils$.selectListbox.labelInArray = function (value, arr) {
-        var trimmedValue = value.trim();
-        for(var i=0; i<arr.length; i++) {
-            if(fetchLabel(arr[i]) === trimmedValue)
-                return i;
+        window.$mmWebcompUtils$.selectListbox.labelInArray = function (value, arr) {
+            var trimmedValue = value.trim();
+            for (var i = 0; i < arr.length; i++) {
+                if (fetchLabel(arr[i]) === trimmedValue)
+                    return i;
+            }
+            return -1;
         }
-        return -1;
     }
     Polymer({
       header: "",

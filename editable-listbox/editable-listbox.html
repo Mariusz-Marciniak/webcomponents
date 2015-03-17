@@ -1,8 +1,3 @@
-<link rel="import" href="bower_components/polymer/polymer.html">
-<link rel="import" href="bower_components/core-icons/core-icons.html">
-<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="bower_components/font-roboto/roboto.html">
-
 <polymer-element name="editable-listbox" attributes="header rows validation conversion">
     <template>
         <style>
@@ -70,44 +65,45 @@
 
     if(window.$mmWebcompUtils$ == undefined)
         window.$mmWebcompUtils$ = {};
-    if(window.$mmWebcompUtils$.editListbox == undefined)
+    if(window.$mmWebcompUtils$.editListbox == undefined) {
         window.$mmWebcompUtils$.editListbox = {};
 
-    window.$mmWebcompUtils$.editListbox.fetchLabel = function (obj) {
-        if(typeof(obj)==="object") {
-            return obj.label.trim();
-        } else {
-            return obj.trim();
-        }
-    }
-
-    window.$mmWebcompUtils$.editListbox.labelInArray = function (value, arr) {
-        var trimmedValue = value.trim();
-        for(var i=0; i<arr.length; i++) {
-            if($mmWebcompUtils$.editListbox.fetchLabel(arr[i]) === trimmedValue)
-                return i;
-        }
-        return -1;
-    }
-
-    window.$mmWebcompUtils$.editListbox.validate = function (func, value, errorComponent) {
-        if(func != undefined && typeof(window[func]) == "function") {
-            var err = window[func](value);
-            if(err === null) {
-                return true;
+        window.$mmWebcompUtils$.editListbox.fetchLabel = function (obj) {
+            if (typeof(obj) === "object") {
+                return obj.label.trim();
             } else {
-                errorComponent.innerHTML = err;
-                return false;
+                return obj.trim();
             }
         }
-        return true;
-    }
 
-    window.$mmWebcompUtils$.editListbox.convert = function(func, value) {
-        if(func != undefined && typeof(window[func]) == "function") {
-            return window[func](value);
-        } else {
-            return value;
+        window.$mmWebcompUtils$.editListbox.labelInArray = function (value, arr) {
+            var trimmedValue = value.trim();
+            for (var i = 0; i < arr.length; i++) {
+                if ($mmWebcompUtils$.editListbox.fetchLabel(arr[i]) === trimmedValue)
+                    return i;
+            }
+            return -1;
+        }
+
+        window.$mmWebcompUtils$.editListbox.validate = function (func, value, errorComponent) {
+            if (func != undefined && typeof(window[func]) == "function") {
+                var err = window[func](value);
+                if (err === null) {
+                    return true;
+                } else {
+                    errorComponent.innerHTML = err;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        window.$mmWebcompUtils$.editListbox.convert = function (func, value) {
+            if (func != undefined && typeof(window[func]) == "function") {
+                return window[func](value);
+            } else {
+                return value;
+            }
         }
     }
     Polymer({
@@ -117,7 +113,7 @@
       addRow: function() {
         var input = this.$.rowInput.value;
         if(input.length>0 && $mmWebcompUtils$.editListbox.labelInArray(input, this.rows) == -1) {
-            if($mmWebcompUtils$.validate(this.validation, input, this.$.error)) {
+            if($mmWebcompUtils$.editListbox.validate(this.validation, input, this.$.error)) {
                 this.rows.push($mmWebcompUtils$.editListbox.convert(this.conversion, input));
                 this.$.error.innerHTML = "";
             }
@@ -128,6 +124,7 @@
         var index = $mmWebcompUtils$.editListbox.labelInArray(sender.innerHTML,this.rows);
         if(index > -1) {
             this.rows.splice(index, 1);
+            this.$.rowInput.value = "";
         }
       },
       labelOf: function(obj) {
