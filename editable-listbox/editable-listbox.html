@@ -86,7 +86,7 @@
         }
 
         window.$mmWebcompUtils$.editListbox.validate = function (func, value, errorComponent) {
-            if (func != undefined && typeof(window[func]) == "function") {
+            if (func != undefined && func.length > 0 && typeof(window[func]) == "function") {
                 var err = window[func](value);
                 if (err === null) {
                     return true;
@@ -99,7 +99,7 @@
         }
 
         window.$mmWebcompUtils$.editListbox.convert = function (func, value) {
-            if (func != undefined && typeof(window[func]) == "function") {
+            if (func != undefined && func.length > 0 && typeof(window[func]) == "function") {
                 return window[func](value);
             } else {
                 return value;
