@@ -84,9 +84,23 @@
             return -1;
         }
 
+        window.$mmWebcompUtils$.editListbox.fetchFunction = function(func) {
+            if (func != undefined && func.length > 0) {
+                var pathElements = func.split(".");
+                var obj = window;
+                for(var i = 0; i < pathElements.length; i++) {
+                    if(obj != undefined) {
+                        obj = obj[pathElements[i]];
+                    }
+                }
+                return obj;
+            } else
+                return undefined;
+        }
         window.$mmWebcompUtils$.editListbox.validate = function (func, value, errorComponent) {
-            if (func != undefined && func.length > 0 && typeof(window[func]) == "function") {
-                var err = window[func](value);
+            var funcObj = $mmWebcompUtils$.editListbox.fetchFunction(func);
+            if (funcObj != undefined) {
+                var err = funcObj(value);
                 if (err === null) {
                     return true;
                 } else {
@@ -98,8 +112,9 @@
         }
 
         window.$mmWebcompUtils$.editListbox.convert = function (func, value) {
-            if (func != undefined && func.length > 0 && typeof(window[func]) == "function") {
-                return window[func](value);
+            var funcObj = $mmWebcompUtils$.editListbox.fetchFunction(func);
+            if (funcObj != undefined) {
+                return funcObj(value);
             } else {
                 return value;
             }

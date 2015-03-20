@@ -14,21 +14,24 @@
     }
 
     function convert(arg) {
-        return JSON.parse('{"label":"'+arg+'"}');
+        return JSON.parse('{"label":"' + arg + '"}');
     }
 
-    function verify(arg) {
-        if(arg === "Mark")
-            return "Mark is not allowed";
-        else
-            return null;
+    var validation_funcs = {
+
+        verify: function (arg) {
+            if (arg === "Mark")
+                return "Mark is not allowed";
+            else
+                return null;
+        }
     }
     </script>
 </head>
 <body unresolved>
     <h1>editable-listbox</h1>
     <div style="width: 300px;">
-        <editable-listbox id="users" header="Users" validation="verify" conversion="convert"
+        <editable-listbox id="users" header="Users" validation="validation_funcs.verify" conversion="convert"
                           rows=["John",{"label":"Gregory","id":"89"}]></editable-listbox>
     </div>
     <br/><br/>
