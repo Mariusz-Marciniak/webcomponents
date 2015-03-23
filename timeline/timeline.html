@@ -1,4 +1,5 @@
-<polymer-element name="timeline-panel" attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows">
+<polymer-element name="timeline-panel"
+                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, invisibleDays">
     <template>
         <style no-shim>
             .month-header {
@@ -42,6 +43,11 @@
             return (to - from) / (1000 * 60 * 60 * 24);
         }
 
+        window.$mmWebcompUtils$.timeline.incrementByDay = function(date) {
+            date.setDate(date.getDate() + 1);
+            return date;
+        }
+
         window.$mmWebcompUtils$.timeline.daysadd = function(date, amount) {
             var result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
             result.setDate(date.getDate() + amount - 1);
@@ -72,7 +78,8 @@
         monthTextStyle: "color: white; display: table-cell; vertical-align:top; padding-top:3px; text-align:center; font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; overflow: hidden;",
         userTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; left: 2px;",
         dayTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; font-size: 10px; top: 28px; text-align:center; ",
-        colorsForRows: ["FireBrick", "GreenYellow", "HotPink"], 
+        colorsForRows: ["FireBrick", "GreenYellow", "HotPink"],
+        invisibleDays: [5,6],
         amountOfDays: 0,
         recalculatePossibleAmountOfDays: function()  {
             var tmpAmountOfDays = this.amountOfDays;
@@ -83,9 +90,36 @@
                 this.amountOfDays = Math.round((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.MIN_COL_WIDTH);
             }
             if (this.amountOfDays != tmpAmountOfDays) {
-                this.to = daysadd(this.from, this.amountOfDays);
+                this.to = window.$mmWebcompUtils$.timeline.daysadd(this.from, this.amountOfDays);
                 console.warn("TIMELINE COMPONENT: too long period, end date will be set to " + this.to);
             }
+        },
+        getVisibleDays: function() {
+            var amount = 0;
+            var tmpDate = new Date(this.from.getFullYear(), this.from.getMonth(), this.from.getDate());
+            var lastMonth = -1;
+            var result = {};
+            var daysForLastMonth = [];
+            while(amount < this.MAX_DAYS) {
+                if(!(tmpDate.getDay() in this.invisibleDays)) {
+                    if(tmpDate.getMonth() != lastMonth && daysForLastMonth.length > 0) {
+                        result[lastMonth] = daysForLastMonth;
+                        daysForLastMonth = [];
+                    }
+                    lastMonth = tmpDate.getMonth();
+                    daysForLastMonth.push(tmpDate.getDate());
+                    amount++;
+                }
+                window.$mmWebcompUtils$.timeline.incrementByDay(tmpDate);
+                if(this.to != undefined && tmpDate > this.to) {
+                    break;
+                }
+            }
+            if(daysForLastMonth.length > 0) {
+                result[lastMonth] = daysForLastMonth;
+            }
+            alert(JSON.stringify(result));
+            return result;
         },
         // --- events
         ready: function() {
@@ -95,8 +129,9 @@
                 this.from = new Date(this.fromDate);
 
             }
+            this.getVisibleDays();
             if(this.toDate == null) {
-                this.to = daysadd(this.from, this.MAX_DAYS)
+                this.to = window.$mmWebcompUtils$.timeline.daysadd(this.from, this.MAX_DAYS);
             } else {
                 this.to = new Date(this.toDate);
             }
@@ -107,7 +142,7 @@
             Polymer.import(["entry.html"]);
         },
         onMouseClick: function(e) {
-            var pos = positionInElement(this, e);
+            var pos = window.$mmWebcompUtils$.timeline.positionInElement(this, e);
             console.log(pos.x + "::" + pos.y);
         },
         // --- rendering functions
