@@ -1,5 +1,5 @@
 <polymer-element name="timeline-panel"
-                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, invisibleDays">
+                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, ininitDaysData">
     <template>
         <style no-shim>
             .month-header {
@@ -66,37 +66,51 @@
         MIN_COL_WIDTH: 20,
         LEFT_PANEL_WIDTH: 100,
         BACKGROUND_STYLE: 'white',
-        // --- object fields
-        maxDays: 31,
-        headerHeight: 0,
-        from: null,
-        to: null,
+        // --- component properties
         rows: [],
-        rowHeight: 20,
+        ininitDaysData: [6,0],
         monthsNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
         monthHeaderStyle: "height: 40px; display: table; overflow: hidden; background-color: SkyBlue; border-radius: 5px; top: 0px;",
         monthTextStyle: "color: white; display: table-cell; vertical-align:top; padding-top:3px; text-align:center; font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; overflow: hidden;",
         userTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; left: 2px;",
         dayTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; font-size: 10px; top: 28px; text-align:center; ",
         colorsForRows: ["FireBrick", "GreenYellow", "HotPink"],
-        invisibleDays: [6,0],
-        amountOfDays: function () {
-            return
-        },
-        recalculateMaximumAmountOfDays: function()  {
-            if ((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.maxDays < this.MIN_COL_WIDTH) 
+        // --- object fields
+        maxDays: 31,
+        headerHeight: 0,
+        from: null,
+        to: null,
+        rowHeight: 20,
+        daysData: [], 
+        // --- component functions
+        initDefaultValues: function()  {
+            if(this.fromDate == null) {
+                this.from = new Date();
+            } else {
+                this.from = new Date(this.fromDate);
+            }
+
+            if(this.toDate == null) {
+                this.to = new Date("2999-01-01");
+            } else {
+                this.to = new Date(this.toDate);
+            }
+
+            if ((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.maxDays < this.MIN_COL_WIDTH)
                 this.maxDays = Math.round((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.MIN_COL_WIDTH);
         },
-        getVisibleDays: function() {
+        initDaysData: function() {
             var amount = 0;
             var tmpDate = new Date(this.from.getFullYear(), this.from.getMonth(), this.from.getDate());
             var lastMonth = -1;
-            var result = {};
             var daysForLastMonth = [];
-            while(amount < this.maxDays) {
-                if(this.invisibleDays.indexOf(tmpDate.getDay()) == -1) {
+            while(amount < this.maxDays && tmpDate < this.to) {
+                if(this.ininitDaysData.indexOf(tmpDate.getDay()) == -1) {
                     if(tmpDate.getMonth() != lastMonth && daysForLastMonth.length > 0) {
-                        result[lastMonth] = daysForLastMonth;
+                        this.daysData.push({
+                            "monthId" : lastMonth,
+                            "days" : daysForLastMonth
+                        });
                         daysForLastMonth = [];
                     }
                     lastMonth = tmpDate.getMonth();
@@ -104,24 +118,33 @@
                     amount++;
                 }
                 window.$mmWebcompUtils$.timeline.incrementByDay(tmpDate);
-                if(this.to != undefined && tmpDate > this.to) {
-                    break;
-                }
             }
             if(daysForLastMonth.length > 0) {
-                result[lastMonth] = daysForLastMonth;
+                this.daysData.push({
+                    "monthId" : lastMonth,
+                    "days" : daysForLastMonth
+                });
             }
-            return result;
+            console.log(JSON.stringify(this.daysData));
+        },
+        amountOfColumns: function() {
+            var total = 0;
+            this.daysData.forEach(function(obj) {
+                total += obj.days.length;
+            });
+            return total;
+        },
+        columnNames: function() {
+            var columns = [];
+            this.daysData.forEach(function(obj) {
+                columns = columns.concat(obj.days);
+            });
+            return columns;
         },
         // --- events
         ready: function() {
-            if(this.fromDate == null) {
-                this.from = new Date();
-            } else {
-                this.from = new Date(this.fromDate);
-            }
-            this.recalculateMaximumAmountOfDays();
-            this.getVisibleDays();
+            this.initDefaultValues();
+            this.initDaysData();
             this.addEventListener("click", this.onMouseClick);
             this.render();
             Polymer.import(["entry.html"]);
@@ -132,31 +155,19 @@
         },
         // --- rendering functions
         render: function() {
-            var colWidth = Math.round((this.parentElement.clientWidth-this.LEFT_PANEL_WIDTH) / this.amountOfDays());
+            var colWidth = Math.round((this.parentElement.clientWidth-this.LEFT_PANEL_WIDTH) / this.amountOfColumns());
             this.renderMonthHeaders(colWidth);
             this.renderDaysNumbers(colWidth);
             this.renderUserNames();
             this.renderEntries(colWidth);
         },
         renderMonthHeaders: function(colWidth) {
-            var dateIter = new Date(this.from.getFullYear(), this.from.getMonth(), this.from.getDate());
             var html = '';
-            var previousMonth = -1;
-            var length = 0;
-            var start = 0;
-            for (var i = 0; i < this.amountOfDays; i++) {
-                if(dateIter.getMonth() != previousMonth) {
-                    if(start != length) {
-                        html += this.prepareHtmlForMonth(this.monthsNames[previousMonth], start, length);
-                        start += length;
-                        length = 0;
-                    }
-                    previousMonth = dateIter.getMonth();
-                }
-                length += colWidth;
-                dateIter.setDate(dateIter.getDate() + 1);
-            }
-            html += this.prepareHtmlForMonth(this.monthsNames[dateIter.getMonth()], start, length);
+            var columnsCount = 0;
+            this.daysData.forEach(function(obj) {
+                html += this.prepareHtmlForMonth(this.monthsNames[parseInt(obj.monthId)], columnsCount*colWidth, obj.days.length*colWidth);
+                columnsCount += obj.days.length;
+            }, this);
             this.$.monthsHeaders.innerHTML = html;
             this.headerHeight = this.$.monthsHeaders.firstChild.clientHeight;
         },
@@ -165,12 +176,12 @@
                     +'px;max-width:'+(length-1)+'px;">'+month+'</span></div>';
         },
         renderDaysNumbers: function (colWidth) {
-            var dateIter = new Date(this.from.getFullYear(), this.from.getMonth(), this.from.getDate());
             var html = '';
             var offset = 0;
-            for (var i = 0; i < this.amountOfDays; i++) {
-                html += this.prepareHtmlForDay(dateIter.getDate(), offset, colWidth);
-                dateIter.setDate(dateIter.getDate() + 1);
+            var columnNames = this.columnNames();
+
+            for (var column of columnNames) {
+                html += this.prepareHtmlForDay(column, offset, colWidth);
                 offset += colWidth;
             }
             this.$.daysHeaders.innerHTML = html;
@@ -195,13 +206,16 @@
             var fromDate, toDate;
             var entryFromColumn, entryAmountOfColumns;
 	        var colorIndex = 0;
+            var totalColumns = this.amountOfColumns();
             for(var row of this.rows) {
                 for(var entry of row.entries) {
-                    fromDate = Math.max(new Date(entry.from),this.from);
-                    toDate = Math.min(new Date(entry.to),this.to);
-                    entryFromColumn = window.$mmWebcompUtils$.timeline.daysdiff(this.from, fromDate);
-                    if(entryFromColumn < this.amountOfDays) {
-                        entryAmountOfColumns = window.$mmWebcompUtils$.timeline.daysdiff(fromDate, toDate)+1;
+                    fromDate = new Date(entry.from);
+                    toDate = new Date(entry.to);
+                    entryFromColumn = Math.max(0,window.$mmWebcompUtils$.timeline.daysdiff(this.from, fromDate));
+                    if(entryFromColumn < totalColumns) {
+                        entryAmountOfColumns = Math.min(
+                                window.$mmWebcompUtils$.timeline.daysdiff(fromDate, toDate),
+                                totalColumns-entryFromColumn);
                         element = document.createElement("timeline-entry");
                         element.top=offset+'px';
                         element.left=(this.LEFT_PANEL_WIDTH+colWidth*entryFromColumn)+'px';
