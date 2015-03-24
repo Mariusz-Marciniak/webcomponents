@@ -81,7 +81,8 @@
         from: null,
         to: null,
         rowHeight: 20,
-        daysData: [], 
+        daysData: [],
+        colWidth: 0,
         // --- component functions
         initDefaultValues: function()  {
             if(this.fromDate == null) {
@@ -128,11 +129,7 @@
             console.log(JSON.stringify(this.daysData));
         },
         amountOfColumns: function() {
-            var total = 0;
-            this.daysData.forEach(function(obj) {
-                total += obj.days.length;
-            });
-            return total;
+            return this.columnNames().length;
         },
         columnNames: function() {
             var columns = [];
@@ -140,6 +137,22 @@
                 columns = columns.concat(obj.days);
             });
             return columns;
+        },
+        columnForDay : function(month, day) {
+            var result = 0, i, obj;
+            for(i = 0; i < this.daysData.length; i++) {
+                obj = this.daysData[i];
+                if(obj.monthId == month && day < obj.days[obj.days.length -1]) {
+                    while(obj.days.indexOf(day) == -1) {
+                        day++;
+                    }
+                    result += obj.days.indexOf(day);
+                    break;
+                } else {
+                    result += obj.days.length;
+                }
+            }
+            return result;
         },
         // --- events
         ready: function() {
@@ -155,17 +168,19 @@
         },
         // --- rendering functions
         render: function() {
-            var colWidth = Math.round((this.parentElement.clientWidth-this.LEFT_PANEL_WIDTH) / this.amountOfColumns());
-            this.renderMonthHeaders(colWidth);
-            this.renderDaysNumbers(colWidth);
+            this.colWidth = Math.round((this.parentElement.clientWidth-this.LEFT_PANEL_WIDTH) / this.amountOfColumns());
+            this.renderMonthHeaders();
+            this.renderDaysNumbers();
             this.renderUserNames();
-            this.renderEntries(colWidth);
+            this.renderEntries();
         },
-        renderMonthHeaders: function(colWidth) {
+        renderMonthHeaders: function() {
             var html = '';
             var columnsCount = 0;
             this.daysData.forEach(function(obj) {
-                html += this.prepareHtmlForMonth(this.monthsNames[parseInt(obj.monthId)], columnsCount*colWidth, obj.days.length*colWidth);
+                html += this.prepareHtmlForMonth(this.monthsNames[parseInt(obj.monthId)],
+                columnsCount*this.colWidth,
+                obj.days.length*this.colWidth);
                 columnsCount += obj.days.length;
             }, this);
             this.$.monthsHeaders.innerHTML = html;
@@ -175,15 +190,15 @@
             return '<div class="month-header" style="left:'+(this.LEFT_PANEL_WIDTH+offset)+'px;"><span class="month-text" style="width:'+(length-1)
                     +'px;max-width:'+(length-1)+'px;">'+month+'</span></div>';
         },
-        renderDaysNumbers: function (colWidth) {
+        renderDaysNumbers: function () {
             var html = '';
             var offset = 0;
             var columnNames = this.columnNames();
 
-            for (var column of columnNames) {
-                html += this.prepareHtmlForDay(column, offset, colWidth);
-                offset += colWidth;
-            }
+            columnNames.forEach(function (column) {
+                html += this.prepareHtmlForDay(column, offset, this.colWidth);
+                offset += this.colWidth;
+            }, this);
             this.$.daysHeaders.innerHTML = html;
         },
         prepareHtmlForDay: function(day, offset, length) {
@@ -193,41 +208,49 @@
         renderUserNames: function() {
             var html = "";
 			var offset = this.headerHeight;
-            for(var row of this.rows) {
+            this.rows.forEach(function(row) {
                 html += '<div class="user-text" style="top:'+offset+'px;">'+row.label+'</div>';
 				offset += this.rowHeight;
-            }
+            }, this);
             this.$.users.innerHTML = html;
         },
-
-        renderEntries: function(colWidth) {
+        renderEntries: function() {
             var element;
-            var offset = this.headerHeight;
+            var topMargin = this.headerHeight;
             var fromDate, toDate;
-            var entryFromColumn, entryAmountOfColumns;
-	        var colorIndex = 0;
-            var totalColumns = this.amountOfColumns();
-            for(var row of this.rows) {
-                for(var entry of row.entries) {
+            var entryFromColumn, entryToColumn, width;
+	        var rowIndex, row, entryIndex, entry;
+	        var amountOfColumns = this.amountOfColumns();
+            for(rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
+                row = this.rows[rowIndex];
+                for(entryIndex = 0; entryIndex < row.entries.length; entryIndex++) {
+                    entry = row.entries[entryIndex];
                     fromDate = new Date(entry.from);
                     toDate = new Date(entry.to);
-                    entryFromColumn = Math.max(0,window.$mmWebcompUtils$.timeline.daysdiff(this.from, fromDate));
-                    if(entryFromColumn < totalColumns) {
-                        entryAmountOfColumns = Math.min(
-                                window.$mmWebcompUtils$.timeline.daysdiff(fromDate, toDate),
-                                totalColumns-entryFromColumn);
-                        element = document.createElement("timeline-entry");
-                        element.top=offset+'px';
-                        element.left=(this.LEFT_PANEL_WIDTH+colWidth*entryFromColumn)+'px';
-                        element.width=(colWidth*entryAmountOfColumns)+'px';
-                        element.height=this.rowHeight+'px';
-                        element.color=this.colorsForRows[colorIndex];
-                        this.$.entries.appendChild(element);
-                    }
+                    entryFromColumn = this.columnForDay(fromDate.getMonth(), fromDate.getDate());
+                    entryToColumn = this.columnForDay(toDate.getMonth(), toDate.getDate());
+                    if(entryToColumn >= amountOfColumns)
+                        width = entryToColumn - entryFromColumn;
+                    else
+                        width = entryToColumn - entryFromColumn + 1;
+                    element = this.prepareTimelineEntry(
+                            topMargin,
+                            entryFromColumn,
+                            width,
+                            rowIndex % this.colorsForRows.length);
+                    this.$.entries.appendChild(element);
                 }
-                offset += this.rowHeight;
-                colorIndex = (colorIndex+1)%this.colorsForRows.length;
+                topMargin += this.rowHeight;
             }
+        },
+        prepareTimelineEntry: function(offset, entryFromColumn, entryAmountOfColumns, colorIndex) {
+            var element = document.createElement("timeline-entry");
+            element.top=offset+'px';
+            element.left=(this.LEFT_PANEL_WIDTH+this.colWidth*entryFromColumn)+'px';
+            element.width=(this.colWidth*entryAmountOfColumns)+'px';
+            element.height=this.rowHeight+'px';
+            element.color=this.colorsForRows[colorIndex];
+            return element;
         }
     });
     </script>
