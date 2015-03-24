@@ -63,11 +63,11 @@
     }
     Polymer({
         // --- const
-        MAX_DAYS: 31,
         MIN_COL_WIDTH: 20,
         LEFT_PANEL_WIDTH: 100,
         BACKGROUND_STYLE: 'white',
         // --- object fields
+        maxDays: 31,
         headerHeight: 0,
         from: null,
         to: null,
@@ -79,20 +79,13 @@
         userTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; left: 2px;",
         dayTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; font-size: 10px; top: 28px; text-align:center; ",
         colorsForRows: ["FireBrick", "GreenYellow", "HotPink"],
-        invisibleDays: [5,6],
-        amountOfDays: 0,
-        recalculatePossibleAmountOfDays: function()  {
-            var tmpAmountOfDays = this.amountOfDays;
-            if (this.amountOfDays > this.MAX_DAYS) {
-                this.amountOfDays = this.MAX_DAYS;
-            }
-            if ((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.amountOfDays < this.MIN_COL_WIDTH) {
-                this.amountOfDays = Math.round((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.MIN_COL_WIDTH);
-            }
-            if (this.amountOfDays != tmpAmountOfDays) {
-                this.to = window.$mmWebcompUtils$.timeline.daysadd(this.from, this.amountOfDays);
-                console.warn("TIMELINE COMPONENT: too long period, end date will be set to " + this.to);
-            }
+        invisibleDays: [6,0],
+        amountOfDays: function () {
+            return
+        },
+        recalculateMaximumAmountOfDays: function()  {
+            if ((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.maxDays < this.MIN_COL_WIDTH) 
+                this.maxDays = Math.round((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.MIN_COL_WIDTH);
         },
         getVisibleDays: function() {
             var amount = 0;
@@ -100,8 +93,8 @@
             var lastMonth = -1;
             var result = {};
             var daysForLastMonth = [];
-            while(amount < this.MAX_DAYS) {
-                if(!(tmpDate.getDay() in this.invisibleDays)) {
+            while(amount < this.maxDays) {
+                if(this.invisibleDays.indexOf(tmpDate.getDay()) == -1) {
                     if(tmpDate.getMonth() != lastMonth && daysForLastMonth.length > 0) {
                         result[lastMonth] = daysForLastMonth;
                         daysForLastMonth = [];
@@ -118,7 +111,6 @@
             if(daysForLastMonth.length > 0) {
                 result[lastMonth] = daysForLastMonth;
             }
-            alert(JSON.stringify(result));
             return result;
         },
         // --- events
@@ -127,16 +119,9 @@
                 this.from = new Date();
             } else {
                 this.from = new Date(this.fromDate);
-
             }
+            this.recalculateMaximumAmountOfDays();
             this.getVisibleDays();
-            if(this.toDate == null) {
-                this.to = window.$mmWebcompUtils$.timeline.daysadd(this.from, this.MAX_DAYS);
-            } else {
-                this.to = new Date(this.toDate);
-            }
-            this.amountOfDays = Math.round(window.$mmWebcompUtils$.timeline.daysdiff(this.from, this.to)) + 1;
-            this.recalculatePossibleAmountOfDays();
             this.addEventListener("click", this.onMouseClick);
             this.render();
             Polymer.import(["entry.html"]);
@@ -147,7 +132,7 @@
         },
         // --- rendering functions
         render: function() {
-            var colWidth = Math.round((this.parentElement.clientWidth-this.LEFT_PANEL_WIDTH) / this.amountOfDays);
+            var colWidth = Math.round((this.parentElement.clientWidth-this.LEFT_PANEL_WIDTH) / this.amountOfDays());
             this.renderMonthHeaders(colWidth);
             this.renderDaysNumbers(colWidth);
             this.renderUserNames();
