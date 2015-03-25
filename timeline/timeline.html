@@ -39,19 +39,9 @@
         window.$mmWebcompUtils$ = {};
     if(window.$mmWebcompUtils$.timeline == undefined) {
         window.$mmWebcompUtils$.timeline = {};
-        window.$mmWebcompUtils$.timeline.daysdiff = function(from, to) {
-            return (to - from) / (1000 * 60 * 60 * 24);
-        }
-
         window.$mmWebcompUtils$.timeline.incrementByDay = function(date) {
             date.setDate(date.getDate() + 1);
             return date;
-        }
-
-        window.$mmWebcompUtils$.timeline.daysadd = function(date, amount) {
-            var result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            result.setDate(date.getDate() + amount - 1);
-            return result;
         }
 
         window.$mmWebcompUtils$.timeline.positionInElement = function(element, e) {
@@ -187,8 +177,8 @@
             this.headerHeight = this.$.monthsHeaders.firstChild.clientHeight;
         },
         prepareHtmlForMonth: function(month, offset, length) {
-            return '<div class="month-header" style="left:'+(this.LEFT_PANEL_WIDTH+offset)+'px;"><span class="month-text" style="width:'+(length-1)
-                    +'px;max-width:'+(length-1)+'px;">'+month+'</span></div>';
+            return '<div class="month-header" style="left:'+(this.LEFT_PANEL_WIDTH+offset)+'px;width:'+(length-1)+'px;">' +
+                    '<span class="month-text">'+month+'</span></div>';
         },
         renderDaysNumbers: function () {
             var html = '';

@@ -12,7 +12,14 @@
     </template>
     <script>
         Polymer({
-
+            // --- events
+            ready: function() {
+                this.addEventListener("click", this.onMouseClick);
+            },
+            onMouseClick: function(e) {
+                var pos = window.$mmWebcompUtils$.timeline.positionInElement(this, e);
+                console.log("entry "+ e.target);
+            }
         });
     </script>
 </polymer-element>
