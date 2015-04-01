@@ -51,7 +51,9 @@
 			]
 		}
 	]);
-			document.getElementById('sample-panel').setAttribute('rows',jsonData);
+			var panel = document.getElementById('sample-panel');
+            panel.setAttribute('rows',jsonData);
+            panel.setAttribute('colorsForRows',JSON.stringify(["#BBAA00","black"]));
 		</script>
     </body>
 </html>

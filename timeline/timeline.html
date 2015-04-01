@@ -50,6 +50,29 @@
                 y: e.clientY - element.offsetTop
             }
         }
+
+        window.$mmWebcompUtils$.timeline.modifyColor = function (value) {
+            if(value > 100)
+                return value - 50;
+            else
+                return value + 50;
+        }
+
+        window.$mmWebcompUtils$.timeline.shade = function(color) {
+            var result = "#000000";
+            var match = /\d+,\s\d+,\s\d+/.exec(color);
+            if(match) {
+                var rgb = match[0].split(",").map(eval);
+                result = "rgb(";
+                result += $mmWebcompUtils$.timeline.modifyColor(rgb[0]);
+                result += ","
+                result += $mmWebcompUtils$.timeline.modifyColor(rgb[1]);
+                result += ","
+                result += $mmWebcompUtils$.timeline.modifyColor(rgb[2]);
+                result += ")"
+            }
+            return result;
+        }
     }
     Polymer({
         // --- const
@@ -110,7 +133,7 @@
                     daysForLastMonth.push(tmpDate.getDate());
                     amount++;
                 }
-                window.$mmWebcompUtils$.timeline.incrementByDay(tmpDate);
+                $mmWebcompUtils$.timeline.incrementByDay(tmpDate);
             }
             if(daysForLastMonth.length > 0) {
                 this.daysData.push({
@@ -185,7 +208,7 @@
             }.bind(this));
         },
         onMouseClick: function(e) {
-            var pos = window.$mmWebcompUtils$.timeline.positionInElement(this, e);
+            var pos = $mmWebcompUtils$.timeline.positionInElement(this, e);
             console.log(pos.x + "::" + pos.y);
             this.entriesList.forEach(function(entry) {
                 console.log(entry.selected);

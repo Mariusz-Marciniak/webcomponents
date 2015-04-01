@@ -7,7 +7,7 @@
                 border-radius: 5px;
             }
         </style>
-        <div class="entry" style="left: {{left}};top: {{top}}; width: {{width}}; height: {{height}}; background: {{color}};" >
+        <div id="entryTab" class="entry" style="left: {{left}};top: {{top}}; width: {{width}}; height: {{height}}; background: {{color}};" >
         </div>
     </template>
     <script>
@@ -15,12 +15,19 @@
             selected: false,
             selectFunction: undefined,
             entry: undefined,
+            color: null,
+            defaultColor: undefined,
             // --- events
-            ready: function() {
+            domReady: function() {
                 this.addEventListener("click", this.onMouseClick);
+                this.defaultColor = window.getComputedStyle(this.$['entryTab']).backgroundColor;
             },
             onMouseClick: function(e) {
                 this.selectFunction();
+                if(this.selected)
+                    this.color = $mmWebcompUtils$.timeline.shade(this.defaultColor);
+                else
+                    this.color = this.defaultColor;
             }
         });
     </script>
