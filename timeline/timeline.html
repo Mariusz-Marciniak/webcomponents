@@ -120,6 +120,13 @@
             }
             console.log(JSON.stringify(this.daysData));
         },
+        getSelection: function() {
+            return this.entriesList.filter(function(entryTag) {
+                return entryTag.selected;
+            }).map(function (entryTag) {
+                return entryTag.entry;
+            });
+        },
         amountOfColumns: function() {
             return this.columnNames().length;
         },
@@ -235,26 +242,16 @@
         renderEntries: function() {
             var entryTag;
             var topMargin = this.headerHeight;
-            var fromDate, toDate;
-            var entryFromColumn, entryToColumn, width;
 	        var rowIndex, row, entryIndex, entry;
 	        var amountOfColumns = this.amountOfColumns();
             for(rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
                 row = this.rows[rowIndex];
                 for(entryIndex = 0; entryIndex < row.entries.length; entryIndex++) {
                     entry = row.entries[entryIndex];
-                    fromDate = new Date(entry.from);
-                    toDate = new Date(entry.to);
-                    entryFromColumn = this.columnForDay(fromDate.getMonth(), fromDate.getDate());
-                    entryToColumn = this.columnForDay(toDate.getMonth(), toDate.getDate());
-                    if(entryToColumn >= amountOfColumns)
-                        width = entryToColumn - entryFromColumn;
-                    else
-                        width = entryToColumn - entryFromColumn + 1;
                     entryTag = this.prepareTimelineEntry(
+                            entry,
                             topMargin,
-                            entryFromColumn,
-                            width,
+                            amountOfColumns,
                             rowIndex % this.colorsForRows.length);
                     this.entriesList.push(entryTag);
                     this.$.entries.appendChild(entryTag);
@@ -262,14 +259,26 @@
                 topMargin += this.rowHeight;
             }
         },
-        prepareTimelineEntry: function(offset, entryFromColumn, entryAmountOfColumns, colorIndex) {
+        prepareTimelineEntry: function(entry, topOffset, amountOfColumns, colorIndex) {
+            var fromDate, toDate;
+            var entryFromColumn, entryToColumn, width;
+            fromDate = new Date(entry.from);
+            toDate = new Date(entry.to);
+            entryFromColumn = this.columnForDay(fromDate.getMonth(), fromDate.getDate());
+            entryToColumn = this.columnForDay(toDate.getMonth(), toDate.getDate());
+            if(entryToColumn >= amountOfColumns)
+                width = entryToColumn - entryFromColumn;
+            else
+                width = entryToColumn - entryFromColumn + 1;
+
             var element = document.createElement("timeline-entry");
-            element.top=offset+'px';
+            element.top=topOffset+'px';
             element.left=(this.LEFT_PANEL_WIDTH+this.colWidth*entryFromColumn)+'px';
-            element.width=(this.colWidth*entryAmountOfColumns)+'px';
+            element.width=(this.colWidth*width)+'px';
             element.height=this.rowHeight+'px';
             element.color=this.colorsForRows[colorIndex];
             element.selected = false;
+            element.entry = entry;
             switch (this.selection) {
                 case "multi" :
                     element.selectFunction = this.selectMulti();

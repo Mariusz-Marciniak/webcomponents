@@ -5,6 +5,12 @@
         <link rel="import" href="bower_components/polymer/polymer.html">
         <link rel="import" href="bower_components/font-roboto/roboto.html">
         <link rel="import" href="timeline.html">
+        <script>
+            function check() {
+                var panel = document.querySelector('#sample-panel');
+                alert(JSON.stringify(panel.getSelection()));
+            }
+        </script>
     </head>
     <body>
         <h1>timeline-panel</h1>
@@ -12,7 +18,8 @@
             <timeline-panel id="sample-panel" fromDate="2015-12-30" toDate="2016-03-27" selection="multi">
 			</timeline-panel>
         </div>
-        <h3>end mark</h3>
+        <br/><br/>
+        <input type="button" value="Verify" onclick="check();"/>
 		<script>
 			var jsonData = JSON.stringify(
 	[
