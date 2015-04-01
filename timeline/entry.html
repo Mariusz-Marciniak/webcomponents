@@ -1,4 +1,4 @@
-<polymer-element name="timeline-entry" attributes="top, left, width, height, color">
+<polymer-element name="timeline-entry" attributes="top, left, width, height, color, selected, selectFunction">
     <template>
         <style no-shim>
             .entry {
@@ -12,13 +12,14 @@
     </template>
     <script>
         Polymer({
+            selected: false,
+            selectFunction: undefined,
             // --- events
             ready: function() {
                 this.addEventListener("click", this.onMouseClick);
             },
             onMouseClick: function(e) {
-                var pos = window.$mmWebcompUtils$.timeline.positionInElement(this, e);
-                console.log("entry "+ e.target);
+                this.selectFunction();
             }
         });
     </script>

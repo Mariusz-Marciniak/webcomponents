@@ -1,5 +1,5 @@
 <polymer-element name="timeline-panel"
-                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, ininitDaysData">
+                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, ininitDaysData, selection">
     <template>
         <style no-shim>
             .month-header {
@@ -65,6 +65,7 @@
         userTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; left: 2px;",
         dayTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; font-size: 10px; top: 28px; text-align:center; ",
         colorsForRows: ["FireBrick", "GreenYellow", "HotPink"],
+        selection: "single",
         // --- object fields
         maxDays: 31,
         headerHeight: 0,
@@ -72,6 +73,7 @@
         to: null,
         rowHeight: 20,
         daysData: [],
+        entriesList: [],
         colWidth: 0,
         // --- component functions
         initDefaultValues: function()  {
@@ -144,17 +146,43 @@
             }
             return result;
         },
+        // --- selection functions used by timeline-entry
+        selectNone: function() {
+            return function() {
+                // do nothing
+            };
+        },
+        selectSingle: function() {
+            var parent = this;
+            return function() {
+                var newSelectedState = !this.selected;
+                // clear all selected on parent
+                parent.entriesList.forEach(function(entry) {
+                    entry.selected = false;
+                });
+                this.selected = newSelectedState;
+            };
+        },
+        selectMulti: function() {
+            return function() {
+                this.selected = !this.selected;
+            };
+        },
         // --- events
         ready: function() {
-            this.initDefaultValues();
-            this.initDaysData();
-            this.addEventListener("click", this.onMouseClick);
-            this.render();
-            Polymer.import(["entry.html"]);
+            Polymer.import(["entry.html"], function() {
+                this.initDefaultValues();
+                this.initDaysData();
+                this.addEventListener("click", this.onMouseClick);
+                this.render();
+            }.bind(this));
         },
         onMouseClick: function(e) {
             var pos = window.$mmWebcompUtils$.timeline.positionInElement(this, e);
             console.log(pos.x + "::" + pos.y);
+            this.entriesList.forEach(function(entry) {
+                console.log(entry.selected);
+            })
         },
         // --- rendering functions
         render: function() {
@@ -205,7 +233,7 @@
             this.$.users.innerHTML = html;
         },
         renderEntries: function() {
-            var element;
+            var entryTag;
             var topMargin = this.headerHeight;
             var fromDate, toDate;
             var entryFromColumn, entryToColumn, width;
@@ -223,12 +251,13 @@
                         width = entryToColumn - entryFromColumn;
                     else
                         width = entryToColumn - entryFromColumn + 1;
-                    element = this.prepareTimelineEntry(
+                    entryTag = this.prepareTimelineEntry(
                             topMargin,
                             entryFromColumn,
                             width,
                             rowIndex % this.colorsForRows.length);
-                    this.$.entries.appendChild(element);
+                    this.entriesList.push(entryTag);
+                    this.$.entries.appendChild(entryTag);
                 }
                 topMargin += this.rowHeight;
             }
@@ -240,6 +269,18 @@
             element.width=(this.colWidth*entryAmountOfColumns)+'px';
             element.height=this.rowHeight+'px';
             element.color=this.colorsForRows[colorIndex];
+            element.selected = false;
+            switch (this.selection) {
+                case "multi" :
+                    element.selectFunction = this.selectMulti();
+                    break;
+                case "none" :
+                    element.selectFunction = this.selectNone();
+                    break;
+                default:
+                    element.selectFunction = this.selectSingle();
+                    break;
+            }
             return element;
         }
     });
