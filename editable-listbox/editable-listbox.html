@@ -130,15 +130,15 @@
             if($mmWebcompUtils$.editListbox.validate(this.validation, input, this.$.error)) {
                 this.rows.push($mmWebcompUtils$.editListbox.convert(this.conversion, input));
                 this.$.error.innerHTML = "";
+                this.$.rowInput.value = "";
             }
         }
-        this.$.rowInput.value = "";
       },
       removeRow: function(event, detail, sender) {
         var index = $mmWebcompUtils$.editListbox.labelInArray(sender.innerHTML,this.rows);
         if(index > -1) {
             this.rows.splice(index, 1);
-            this.$.rowInput.value = "";
+            this.$.error.innerHTML = "";
         }
       },
       labelOf: function(obj) {
