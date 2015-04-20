@@ -200,7 +200,7 @@
         },
         // --- events
         ready: function() {
-            Polymer.import(["entry.html"], function() {
+            Polymer.import([this.resolvePath("entry.html")], function() {
                 this.initDefaultValues();
                 this.initDaysData();
                 this.addEventListener("click", this.onMouseClick);
