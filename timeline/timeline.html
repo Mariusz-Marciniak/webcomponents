@@ -1,5 +1,5 @@
 <polymer-element name="timeline-panel"
-                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, ininitDaysData, selection, width">
+                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, skipWeekDays, selection, width">
     <template>
         <style no-shim>
             .month-header {
@@ -80,7 +80,7 @@
         BACKGROUND_STYLE: 'white',
         // --- component properties
         rows: [],
-        ininitDaysData: [6,0],
+        skipWeekDays: [6,0],
         monthsNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
         monthHeaderStyle: "height: 40px; display: table; overflow: hidden; background-color: SkyBlue; border-radius: 5px; top: 0px;",
         monthTextStyle: "color: white; display: table-cell; vertical-align:top; padding-top:3px; text-align:center; font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; overflow: hidden;",
@@ -125,7 +125,7 @@
             var lastMonth = -1;
             var daysForLastMonth = [];
             while(amount < this.maxDays && tmpDate < this.to) {
-                if(this.ininitDaysData.indexOf(tmpDate.getDay()) == -1) {
+                if(this.skipWeekDays.indexOf(tmpDate.getDay()) == -1) {
                     if(tmpDate.getMonth() != lastMonth && daysForLastMonth.length > 0) {
                         this.daysData.push({
                             "monthId" : lastMonth,
