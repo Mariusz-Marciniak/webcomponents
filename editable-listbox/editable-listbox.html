@@ -131,7 +131,7 @@
                 this.rows.push($mmWebcompUtils$.editListbox.convert(this.conversion, input));
                 this.$.error.innerHTML = "";
                 this.$.rowInput.value = "";
-                this.fire('dataChanged', {rows: this.rows});
+                this.fire('data-changed', {rows: this.rows});
             }
         }
       },
@@ -140,7 +140,7 @@
         if(index > -1) {
             this.rows.splice(index, 1);
             this.$.error.innerHTML = "";
-            this.fire('dataChanged', {rows: this.rows});
+            this.fire('data-changed', {rows: this.rows});
         }
       },
       labelOf: function(obj) {
