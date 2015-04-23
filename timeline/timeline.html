@@ -1,5 +1,5 @@
 <polymer-element name="timeline-panel"
-                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, ininitDaysData, selection">
+                 attributes="fromDate, toDate, monthsNames, monthHeaderStyle, monthTextStyle, dayTextStyle, userTextStyle, rowHeight, rows, colorsForRows, ininitDaysData, selection, width">
     <template>
         <style no-shim>
             .month-header {
@@ -22,7 +22,6 @@
                 position: absolute;
             }
             .full-view {
-                width: 100%;
                 height: 100%;
                 position: relative;
             }
@@ -89,8 +88,9 @@
         dayTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; font-size: 10px; top: 28px; text-align:center; ",
         colorsForRows: ["FireBrick", "GreenYellow", "HotPink"],
         selection: "single",
+        width: -1,
         // --- object fields
-        maxDays: 31,
+        maxDays: 500,
         headerHeight: 0,
         from: null,
         to: null,
@@ -100,6 +100,10 @@
         colWidth: 0,
         // --- component functions
         initDefaultValues: function()  {
+            if(this.width < 0)
+                this.width = this.parentElement.clientWidth;
+
+
             if(this.fromDate == null) {
                 this.from = new Date();
             } else {
@@ -112,8 +116,8 @@
                 this.to = new Date(this.toDate);
             }
 
-            if ((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.maxDays < this.MIN_COL_WIDTH)
-                this.maxDays = Math.round((this.parentElement.clientWidth - this.LEFT_PANEL_WIDTH) / this.MIN_COL_WIDTH);
+            if ((this.width - this.LEFT_PANEL_WIDTH) / this.maxDays < this.MIN_COL_WIDTH)
+                this.maxDays = Math.round((this.width - this.LEFT_PANEL_WIDTH) / this.MIN_COL_WIDTH);
         },
         initDaysData: function() {
             var amount = 0;
@@ -141,7 +145,6 @@
                     "days" : daysForLastMonth
                 });
             }
-            console.log(JSON.stringify(this.daysData));
         },
         getSelection: function() {
             return this.entriesList.filter(function(entryTag) {
@@ -207,16 +210,9 @@
                 this.render();
             }.bind(this));
         },
-        onMouseClick: function(e) {
-            var pos = $mmWebcompUtils$.timeline.positionInElement(this, e);
-            console.log(pos.x + "::" + pos.y);
-            this.entriesList.forEach(function(entry) {
-                console.log(entry.selected);
-            })
-        },
         // --- rendering functions
         render: function() {
-            this.colWidth = Math.round((this.parentElement.clientWidth-this.LEFT_PANEL_WIDTH) / this.amountOfColumns());
+            this.colWidth = Math.round((this.width-this.LEFT_PANEL_WIDTH) / this.amountOfColumns());
             this.renderMonthHeaders();
             this.renderDaysNumbers();
             this.renderUserNames();
