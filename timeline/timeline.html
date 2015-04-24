@@ -99,6 +99,22 @@
         entriesList: [],
         colWidth: 0,
         // --- component functions
+        refresh: function() {
+            this.resetData();
+            this.initDefaultValues();
+            this.initDaysData();
+            this.addEventListener("click", this.onMouseClick);
+            this.render();
+        },
+        resetData: function() {
+            this.entriesList.forEach(function(entry) {
+                entry.remove();
+            });
+            this.maxDays=500;
+            this.daysData = [];
+            this.entriesList = [];
+            this.colWidth = 0;
+        },
         initDefaultValues: function()  {
             if(this.width < 0)
                 this.width = this.parentElement.clientWidth;
@@ -203,12 +219,7 @@
         },
         // --- events
         ready: function() {
-            Polymer.import([this.resolvePath("entry.html")], function() {
-                this.initDefaultValues();
-                this.initDaysData();
-                this.addEventListener("click", this.onMouseClick);
-                this.render();
-            }.bind(this));
+            Polymer.import([this.resolvePath("entry.html")], this.refresh.bind(this));
         },
         // --- rendering functions
         render: function() {
