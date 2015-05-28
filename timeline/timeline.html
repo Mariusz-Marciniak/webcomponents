@@ -86,7 +86,7 @@
         monthTextStyle: "color: white; display: table-cell; vertical-align:top; padding-top:3px; text-align:center; font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; overflow: hidden;",
         userTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; left: 2px;",
         dayTextStyle: "font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial; font-size: 10px; top: 28px; text-align:center; ",
-        colorsForRows: ["FireBrick", "GreenYellow", "HotPink"],
+        colorsForRows: ["FireBrick", "GreenYellow", "HotPink", "DeepSkyBlue", "DarkOliveGreen", "DarkBlue", "Crimson", "BlueViolet", "BurlyWood"],
         selection: "single",
         width: -1,
         // --- object fields
@@ -210,11 +210,14 @@
                     entry.selected = false;
                 });
                 this.selected = newSelectedState;
+                parent.fire('selection-changed', {selected: parent.getSelection()});
             };
         },
         selectMulti: function() {
+            var parent = this;
             return function() {
                 this.selected = !this.selected;
+                parent.fire('selection-changed', {selected: parent.getSelection()});
             };
         },
         // --- events

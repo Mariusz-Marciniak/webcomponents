@@ -54,6 +54,10 @@
 			var panel = document.getElementById('sample-panel');
             panel.setAttribute('rows',jsonData);
             panel.setAttribute('colorsForRows',JSON.stringify(["#BBAA00","black"]));
+
+            document.addEventListener("selection-changed", function(e) {
+                alert(JSON.stringify(e.detail.selected));
+            });
 		</script>
     </body>
 </html>
