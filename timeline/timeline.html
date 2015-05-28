@@ -286,8 +286,10 @@
                             topMargin,
                             amountOfColumns,
                             rowIndex % this.colorsForRows.length);
-                    this.entriesList.push(entryTag);
-                    this.$.entries.appendChild(entryTag);
+                    if(entryTag != null) {
+                        this.entriesList.push(entryTag);
+                        this.$.entries.appendChild(entryTag);
+                    }
                 }
                 topMargin += this.rowHeight;
             }
@@ -299,6 +301,9 @@
             toDate = new Date(entry.to);
             entryFromColumn = this.columnForDay(fromDate.getMonth(), fromDate.getDate());
             entryToColumn = this.columnForDay(toDate.getMonth(), toDate.getDate());
+            if(entryToColumn == 0 && this.daysData[0].days[0] != toDate.getDate()) {
+                 return null;
+            }
             if(entryToColumn >= amountOfColumns)
                 width = entryToColumn - entryFromColumn;
             else
