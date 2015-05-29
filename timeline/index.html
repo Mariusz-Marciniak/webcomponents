@@ -59,8 +59,8 @@
             panel.setAttribute('rows',jsonData);
             panel.setAttribute('colorsForRows',JSON.stringify(["#BBAA00","black"]));
 
-            document.addEventListener("selection-changed", function(e) {
-                alert(JSON.stringify(e.detail.selected));
+            document.addEventListener("clicked", function(e) {
+                alert(JSON.stringify(e.detail.entry));
             });
 		</script>
     </body>

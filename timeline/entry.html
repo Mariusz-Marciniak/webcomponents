@@ -24,6 +24,7 @@
             },
             onMouseClick: function(e) {
                 this.selectFunction();
+                this.fire('clicked', {"entry": this.entry});
                 if(this.selected)
                     this.color = $mmWebcompUtils$.timeline.shade(this.defaultColor);
                 else
