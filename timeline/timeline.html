@@ -206,9 +206,7 @@
                         day--;
                     }
                     if(day >= 0) {
-                        columnIndex += monthWithWorkdays.days.indexOf(day);
-                    } else {
-                        columnIndex -= 1;
+                        columnIndex += monthWithWorkdays.days.indexOf(day) + 1;
                     }
                     break;
                 } else { // not the same month add all days
@@ -326,10 +324,7 @@
             if(entryToColumn == 0 && this.daysData[0].days[0] != toDate.getDate()) {
                  return null;
             }
-            if(entryToColumn >= amountOfColumns)
-                width = entryToColumn - entryFromColumn;
-            else
-                width = entryToColumn - entryFromColumn + 1;
+            width = entryToColumn - entryFromColumn;
 
             var element = document.createElement("timeline-entry");
             element.top=topOffset+'px';
