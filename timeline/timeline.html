@@ -183,7 +183,9 @@
             var columnIndex = 0, i, monthWithWorkdays;
             for(i = 0; i < this.daysData.length; i++) {
                 monthWithWorkdays = this.daysData[i];
-                if(monthWithWorkdays.monthId == month) {
+                if(monthWithWorkdays.monthId == (month+1)%12 && i==0) { // event start month is one before the beginning of timeline
+                    return columnIndex;
+                } else if(monthWithWorkdays.monthId == month) {
                     if(day < monthWithWorkdays.days[monthWithWorkdays.days.length -1]) {
                         while (monthWithWorkdays.days.indexOf(day) == -1) {
                             day++;
