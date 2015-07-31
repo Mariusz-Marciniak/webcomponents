@@ -179,21 +179,43 @@
             });
             return columns;
         },
-        columnForDay : function(month, day) {
-            var result = 0, i, obj;
+        columnForStartDay : function(month, day) {
+            var columnIndex = 0, i, monthWithWorkdays;
             for(i = 0; i < this.daysData.length; i++) {
-                obj = this.daysData[i];
-                if(obj.monthId == month && day < obj.days[obj.days.length -1]) {
-                    while(obj.days.indexOf(day) == -1) {
-                        day++;
+                monthWithWorkdays = this.daysData[i];
+                if(monthWithWorkdays.monthId == month) {
+                    if(day < monthWithWorkdays.days[monthWithWorkdays.days.length -1]) {
+                        while (monthWithWorkdays.days.indexOf(day) == -1) {
+                            day++;
+                        }
+                        columnIndex += monthWithWorkdays.days.indexOf(day);
+                        break;
                     }
-                    result += obj.days.indexOf(day);
-                    break;
-                } else {
-                    result += obj.days.length;
+                } else { // not the same month add all days
+                    columnIndex += monthWithWorkdays.days.length;
                 }
             }
-            return result;
+            return columnIndex;
+        },
+        columnForEndDay : function(month, day) {
+            var columnIndex = 0, i, monthWithWorkdays;
+            for(i = 0; i < this.daysData.length; i++) {
+                monthWithWorkdays = this.daysData[i];
+                if(monthWithWorkdays.monthId == month) {
+                    while (monthWithWorkdays.days.indexOf(day) == -1 && day >= 0) {
+                        day--;
+                    }
+                    if(day >= 0) {
+                        columnIndex += monthWithWorkdays.days.indexOf(day);
+                    } else {
+                        columnIndex -= 1;
+                    }
+                    break;
+                } else { // not the same month add all days
+                    columnIndex += monthWithWorkdays.days.length;
+                }
+            }
+            return columnIndex;
         },
         // --- selection functions used by timeline-entry
         selectNone: function() {
@@ -299,8 +321,8 @@
             var entryFromColumn, entryToColumn, width;
             fromDate = new Date(entry.from);
             toDate = new Date(entry.to);
-            entryFromColumn = this.columnForDay(fromDate.getMonth(), fromDate.getDate());
-            entryToColumn = this.columnForDay(toDate.getMonth(), toDate.getDate());
+            entryFromColumn = this.columnForStartDay(fromDate.getMonth(), fromDate.getDate());
+            entryToColumn = this.columnForEndDay(toDate.getMonth(), toDate.getDate());
             if(entryToColumn == 0 && this.daysData[0].days[0] != toDate.getDate()) {
                  return null;
             }
