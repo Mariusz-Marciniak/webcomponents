@@ -189,8 +189,10 @@
                             day++;
                         }
                         columnIndex += monthWithWorkdays.days.indexOf(day);
-                        break;
+                    } else {
+                        columnIndex += monthWithWorkdays.days.length;
                     }
+                    break;
                 } else { // not the same month add all days
                     columnIndex += monthWithWorkdays.days.length;
                 }
