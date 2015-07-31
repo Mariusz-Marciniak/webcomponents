@@ -138,18 +138,20 @@
         initDaysData: function() {
             var amount = 0;
             var tmpDate = new Date(this.from.getFullYear(), this.from.getMonth(), this.from.getDate());
-            var lastMonth = -1;
+            var lastMonth = -1, lastYear = -1;
             var daysForLastMonth = [];
             while(amount < this.maxDays && tmpDate < this.to) {
                 if(this.skipWeekDays.indexOf(tmpDate.getDay()) == -1) {
                     if(tmpDate.getMonth() != lastMonth && daysForLastMonth.length > 0) {
                         this.daysData.push({
+                            "year" : lastYear,
                             "monthId" : lastMonth,
                             "days" : daysForLastMonth
                         });
                         daysForLastMonth = [];
                     }
                     lastMonth = tmpDate.getMonth();
+                    lastYear = tmpDate.getFullYear();
                     daysForLastMonth.push(tmpDate.getDate());
                     amount++;
                 }
@@ -179,11 +181,15 @@
             });
             return columns;
         },
-        columnForStartDay : function(month, day) {
+        columnForStartDay : function(year, month, day) {
             var columnIndex = 0, i, monthWithWorkdays;
+            if(this.daysData[0].year*100+this.daysData[0].monthId > year*100+month) { // this event starts before timeline range
+                return columnIndex;
+            }
+
             for(i = 0; i < this.daysData.length; i++) {
                 monthWithWorkdays = this.daysData[i];
-                if(monthWithWorkdays.monthId == month) {
+                if(monthWithWorkdays.year==year && monthWithWorkdays.monthId == month) {
                     if(day < monthWithWorkdays.days[monthWithWorkdays.days.length -1]) {
                         while (monthWithWorkdays.days.indexOf(day) == -1) {
                             day++;
@@ -193,17 +199,20 @@
                         columnIndex += monthWithWorkdays.days.length;
                     }
                     break;
-                } else { // not the same month add all days
+                } else {
                     columnIndex += monthWithWorkdays.days.length;
                 }
             }
             return columnIndex;
         },
-        columnForEndDay : function(month, day) {
+        columnForEndDay : function(year, month, day) {
             var columnIndex = 0, i, monthWithWorkdays;
+            if(this.daysData[0].year*100+this.daysData[0].monthId > year*100+month) { // this event ends before timeline range
+                return columnIndex;
+            }
             for(i = 0; i < this.daysData.length; i++) {
                 monthWithWorkdays = this.daysData[i];
-                if(monthWithWorkdays.monthId == month) {
+                if(monthWithWorkdays.year==year && monthWithWorkdays.monthId == month) {
                     while (monthWithWorkdays.days.indexOf(day) == -1 && day >= 0) {
                         day--;
                     }
@@ -321,8 +330,8 @@
             var entryFromColumn, entryToColumn, width;
             fromDate = new Date(entry.from);
             toDate = new Date(entry.to);
-            entryFromColumn = this.columnForStartDay(fromDate.getMonth(), fromDate.getDate());
-            entryToColumn = this.columnForEndDay(toDate.getMonth(), toDate.getDate());
+            entryFromColumn = this.columnForStartDay(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+            entryToColumn = this.columnForEndDay(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
             if(entryToColumn == 0 && this.daysData[0].days[0] != toDate.getDate()) {
                  return null;
             }
