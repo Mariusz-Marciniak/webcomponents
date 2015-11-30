@@ -191,7 +191,7 @@
             for(i = 0; i < this.daysData.length; i++) {
                 monthWithWorkdays = this.daysData[i];
                 if(monthWithWorkdays.year==year && monthWithWorkdays.monthId == month) {
-                    if(day < monthWithWorkdays.days[monthWithWorkdays.days.length -1]) {
+                    if(day <= monthWithWorkdays.days[monthWithWorkdays.days.length -1]) {
                         while (monthWithWorkdays.days.indexOf(day) == -1) {
                             day++;
                         }
